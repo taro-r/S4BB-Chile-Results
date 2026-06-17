@@ -1,0 +1,35 @@
+with h5py.File('/global/cfs/cdirs/cmbs4/chile_optimization/analysis/cbischoff/phase2/spectra/phase2_spec_llcdm_f1_y20_n3_full_withpbs_000_100.h5', 'r') as f1, \
+     h5py.File('/global/homes/v/vhoffman/reproduce_colin_results/spectra/phase2_spec_llcdm_f1_y20_n3_full_withpbs_000_100.h5', 'r') as f2:
+    spec1 = XSpec.from_hdf5(f1)
+    spec2 = XSpec.from_hdf5(f2)
+
+ell_centers = 0.5 * (spec1.bins[0] + spec1.bins[1])
+
+ps_mean1 = np.mean(spec1.spec, axis=2)
+ps_mean2 = np.mean(spec2.spec, axis=2)
+
+spec_names1 = spec1.str()
+
+ncols = 6
+nplots = spec1.nspec()
+nrows = int(np.ceil(nplots / ncols))
+
+fig, axes = plt.subplots(nrows, ncols, figsize=(5 * ncols, 4 * nrows))
+
+axes = axes.flatten()
+
+for i in range(nplots):
+    ax = axes[i]
+    ax.plot(ell_centers, ps_mean1[i], marker='o', linestyle='-', color='red', label='Colin Spectra')
+    ax.plot(ell_centers, ps_mean2[i], marker='s', linestyle='--', color='blue', label='Veronica Spectra')
+    ax.set_xlabel(r'$\ell$')
+    ax.set_ylabel(r'$C_\ell$')
+    ax.set_title(f'{spec_names1[i]} (with pbs)')
+    ax.grid()
+    ax.legend()
+
+for j in range(nplots, len(axes)):
+    fig.delaxes(axes[j])
+
+plt.tight_layout()
+plt.show()

@@ -1,0 +1,36 @@
+simtype = signoi
+field = 1
+year = 20
+nlat = 3
+gauss = None
+mult = 1.1
+using full bands
+using performance-based scaling
+rlz 0--100
+3 <class 'int'>
+test_runs/mult_p10 <class 'str'>
+spectra/inj_noise/seeded/test_runs/mult_p10/phase2_spec_signoi_f1_y20_n3_full_withpbs_000_100.h5
+spectra/inj_noise/seeded/test_runs/mult_p10/phase2_spec_signoi_f1_y20_n3_full_withpbs_000_100.h5
+	Command being timed: "python -u phase2_calcspec.py signoi 1 20 --nlat 3 --pbs --rlz 0 100 --seed-LTnoise --fpath test_runs/mult_p10 --mult 1.10 --dry-run"
+	User time (seconds): 1.33
+	System time (seconds): 0.60
+	Percent of CPU this job got: 105%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.84
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 118784
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 34330
+	Voluntary context switches: 2705
+	Involuntary context switches: 35
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

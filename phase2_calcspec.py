@@ -29,6 +29,11 @@ parser.add_argument('--split', action='store_true',
                     help='set flag to use MF split bands')
 parser.add_argument('--pbs', action='store_true',
                     help='set flag to use performance-based scaling for SAT')
+parser.add_argument('--seed-LTnoise', action='store_true',
+                    help='use the seeded lensing template noise for each realization')
+parser.add_argument('--fpath', type=str, help='set the filepath of the spectra')
+parser.add_argument('--gauss', type=float, help='inject gaussian nose of std 1e-2 * argument')
+parser.add_argument('--mult', type=float, help='multiply the lensing')
 parser.add_argument('--dry-run', action='store_true',
                     help='print configuration and exit')
 
@@ -41,6 +46,11 @@ if __name__ == '__main__':
     print(f'field = {args.field}')
     print(f'year = {args.year}')
     print(f'nlat = {args.nlat}')
+    print(f'gauss = {args.gauss}')
+    print(f'mult = {args.mult}')
+
+    if args.gauss is not None and args.mult is not None:
+        raise ValueError('should have only one type of noise injection (mult or gauss)')
     if args.split:
         print('using split bands')
     else:
@@ -50,12 +60,19 @@ if __name__ == '__main__':
     else:
         print('no performance-based scaling')
     print(f'rlz {args.rlz[0]}--{args.rlz[1]}')
+    print(args.nlat,type(args.nlat))
+    print(args.fpath, type(args.fpath))
+    outfile = ph2.spectra_file(args.simtype, args.field, args.year, args.nlat,
+                               args.rlz[0], args.rlz[1], split_bands=args.split,
+                               pbscaling=args.pbs, fpath=args.fpath)
+    print(outfile)
     if args.dry_run:
         quit()
     
     # Code provenance
-    s4bbrepo = git.Repo('s4bb/')
-    print('s4bb version: {}'.format(s4bbrepo.head.object.hexsha))
+    #s4bbrepo = git.Repo('s4bb/')
+    #print('s4bb version: {}'.format(s4bbrepo.head.object.hexsha))
+    print('s4bb version: local files only (no git)')
     print('namaster version: {}'.format(nmt.__version__))
     
     # Input maps to power spectrum estimator
@@ -74,19 +91,22 @@ if __name__ == '__main__':
     # Calculate power spectra for all realizations
     print(args.rlz[0])
     maps = ph2.read_maps(maplist, args.simtype, args.year, args.nlat,
-                         args.rlz[0], pbscaling=args.pbs)
+                         args.rlz[0], pbscaling=args.pbs, LTseeding=args.seed_LTnoise,
+                         gauss=args.gauss, mult=args.mult)
     ph2.trim_maps(apod, maps)
     spec = cs.calc(maps)
     for i in range(args.rlz[0]+1, args.rlz[1]):
         print(i)
         maps = ph2.read_maps(maplist, args.simtype, args.year, args.nlat,
-                             i, pbscaling=args.pbs)
+                             i, pbscaling=args.pbs, LTseeding=args.seed_LTnoise,
+                             gauss=args.gauss, mult=args.mult)
         ph2.trim_maps(apod, maps)
         spec += cs.calc(maps)
 
     # Save spectra to HDF5 file
     outfile = ph2.spectra_file(args.simtype, args.field, args.year, args.nlat,
                                args.rlz[0], args.rlz[1], split_bands=args.split,
-                               pbscaling=args.pbs)
+                               pbscaling=args.pbs, fpath=args.fpath)
+    print(outfile)
     with h5py.File(outfile, 'w') as f:
         spec.to_hdf5(f)

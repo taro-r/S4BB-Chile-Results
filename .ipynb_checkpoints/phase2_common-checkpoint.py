@@ -31,50 +31,56 @@ VALID_YEARS = [7,10,20]
 # NSIDE=512 for phase 2 sims
 NSIDE = 512
 
-# CMB-S4 SAT bands
+# CMB-S4 SAT bands - files are identical to Colins scripts; Colin's script just uses the phase2 symlink
 bands = {'LF-1': {'freq': 26,
 		  'bandpass': Bandpass.tophat(21.5, 28.0), 
 		  'fwhm_arcmin': 79.2, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f030_30years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f030_30years_cov.fits'},
 	 'LF-2': {'freq': 39,
 		  'bandpass': Bandpass.tophat(28.0, 45.0),
 		  'fwhm_arcmin': 56.6, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f040_30years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f040_30years_cov.fits'},
 	 'MF1-1': {'freq': 85,
 		   'bandpass': Bandpass.tophat(74.8, 95.2),
 		   'fwhm_arcmin': 22.9, 'lensing_template': False,
-                   'cov': 'phase2/noise_depth/sun90max_f085_90years_cov.fits'},
+                   'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f085_90years_cov.fits'},
 	 'MF2-1': {'freq': 95,
 		   'bandpass': Bandpass.tophat(83.6, 106.4),
 		   'fwhm_arcmin': 20.6, 'lensing_template': False,
-                   'cov': 'phase2/noise_depth/sun90max_f095_90years_cov.fits'},
+                   'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f095_90years_cov.fits'},
          'MF-1': {'freq': 90,
                   'bandpass': Bandpass.tophat(77.0, 106.0),
                   'fwhm_arcmin': 21.4, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f090_180years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f090_180years_cov.fits'},
 	 'MF1-2': {'freq': 145,
 		   'bandpass': Bandpass.tophat(129.1, 161.0),
 		   'fwhm_arcmin': 14.2, 'lensing_template': False,
-                   'cov': 'phase2/noise_depth/sun90max_f145_90years_cov.fits'},
+                   'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f145_90years_cov.fits'},
 	 'MF2-2': {'freq': 155,
 		   'bandpass': Bandpass.tophat(138.0, 172.1),
 		   'fwhm_arcmin': 13.5, 'lensing_template': False,
-                   'cov': 'phase2/noise_depth/sun90max_f155_90years_cov.fits'},
+                   'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f155_90years_cov.fits'},
          'MF-2': {'freq': 150,
                   'bandpass': Bandpass.tophat(128.0, 169.0),
                   'fwhm_arcmin': 14.0, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f150_180years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f150_180years_cov.fits'},
 	 'HF-1': {'freq': 227,
 		  'bandpass': Bandpass.tophat(198.0, 256.0),
 		  'fwhm_arcmin': 9.4, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f220_60years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f220_60years_cov.fits'},
 	 'HF-2': {'freq': 286,
 		  'bandpass': Bandpass.tophat(256.0, 315.0),
 		  'fwhm_arcmin': 7.8, 'lensing_template': False,
-                  'cov': 'phase2/noise_depth/sun90max_f280_60years_cov.fits'},
+                  'cov': '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/noise_depth/sun90max_f280_60years_cov.fits'},
 	 'LT': {'freq': None, 'bandpass': None, 'fwhm_arcmin': None,
 		'lensing_template': True}
 	 }
+
+# Seeding for lensing template noise maps
+seednum = 16528  # Arbitrarily chosen seed numbers - DO NOT CHANGE
+seed = np.random.default_rng(seednum)
+seednum2 = 49182465327498314
+seed2 = np.random.default_rng(seednum2)
 
 # Bands to use for "with split bands" vs "no split bands" cases.
 with_split_bands = ['LF-1', 'LF-2', 'MF1-1', 'MF2-1', 'MF1-2', 'MF2-2', 'HF-1', 'HF-2', 'LT']
@@ -163,7 +169,7 @@ def get_maplist(simtype, split_bands=True):
                                   simtype=stype))
     return maplist
 
-def read_noise_map(band, yr, nlat, rlz, pbscaling=False):
+def read_noise_map(band, yr, nlat, rlz, pbscaling=False, LTseeding=False):
     """Read noise map, QU only"""
 
     # Directory for noise sims
@@ -173,15 +179,19 @@ def read_noise_map(band, yr, nlat, rlz, pbscaling=False):
     if band == 'LT':
         # Basically negligible white noise level (but non-zero to
         # avoid problems)
-        LT_NOISE = 1e-2 # rms noise, in uK
-        m = LT_NOISE * np.random.randn(2, hp.nside2npix(NSIDE))
+        LT_NOISE = 1e-2 # rms noise, in uK - WAS ORIGINALLY 1e-2
+        if LTseeding: # Seed the LT noise if specified
+            mseed = seed.standard_normal(size=(2,hp.nside2npix(NSIDE)))
+            m = LT_NOISE * mseed
+        else:
+            m = LT_NOISE * np.random.randn(2, hp.nside2npix(NSIDE))
     else:
         nu = bands[band]['freq']
         if pbscaling:
-            dir = f'phase2/with_pbscaling/noise_{yr:02d}_years/'
+            dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/with_pbscaling/noise_{yr:02d}_years/'
             mapname = f'phase2_noise_f{nu:03d}_SAT_mc_{rlz:04d}.fits'
         else:
-            dir = f'phase2/no_pbscaling/noise_{yr:02d}_years/'
+            dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/no_pbscaling/noise_{yr:02d}_years/'
             mapname = f'phase2_noise_f{nu:03d}_SAT90_mc_{rlz:04d}.fits'            
         m = hp.read_map(dir + mapname, field=(1,2))
         m[m == hp.UNSEEN] = 0.0
@@ -189,7 +199,7 @@ def read_noise_map(band, yr, nlat, rlz, pbscaling=False):
         m = m * 1e6        
     return m
 
-def read_llcdm_map(band, yr, nlat, rlz):
+def read_llcdm_map(band, yr, nlat, rlz, comb=False, gauss=False, mult=False):
     """Read CMB map, QU only"""
 
     # Directory for combined maps
@@ -198,9 +208,9 @@ def read_llcdm_map(band, yr, nlat, rlz):
     # Read map
     if band == 'LT':
         if yr == 20:
-            dir = f'phase2/lensing_templates/no_pbscaling_no_artifact/v0/years{yr:02d}_lats{nlat:1d}/'
+            dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/lensing_templates/no_pbscaling_no_artifact/v0/years{yr:02d}_lats{nlat:1d}/'
         else:
-            dir = f'phase2/lensing_templates/no_pbscaling/v0/years{yr:02d}_lats{nlat:1d}/'
+            dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/lensing_templates/no_pbscaling/v0/years{yr:02d}_lats{nlat:1d}/'
         almname = f'blt_p012_e013_lmax1024_yr{yr:02d}_lat{nlat:1d}_sim{rlz:03d}.fits'
         Blm = hp.read_alm(dir + almname, hdu=1)
         # These files include Blm only, set Tlm and Elm to zero
@@ -209,8 +219,23 @@ def read_llcdm_map(band, yr, nlat, rlz):
         # Lensing templates are already in uK
         # Convert back to a map, keep Q/U only
         m = hp.alm2map(alm, NSIDE, pol=True)[1:]
+
+        combLT_noise = 10 * 1e-2
+        
+        if comb:
+            # Add noise/systematics ONLY to comb maps
+            
+            if gauss is not None:
+                combLT_noise = gauss * 1e-2
+                mseed2 = seed2.standard_normal(size=(2,hp.nside2npix(NSIDE)))
+                mnoise = combLT_noise * mseed2
+                m = m + mnoise
+
+            else:
+                m = mult * m
+        
     else:
-        dir = 'phase2/cmb/sat/'        
+        dir = '/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/cmb/sat/'        
         nu = bands[band]['freq']
         mapname = f'phase2_cmb_f{nu:03d}_mc_{rlz:04d}.fits'
         m = hp.read_map(dir + mapname, field=(1,2))
@@ -225,15 +250,15 @@ def read_comb_map(band, yr, nlat, rlz, pbscaling=False):
     if yr not in VALID_YEARS:
         raise ValueError('invalid number of years')    
     if band == 'LT':
-        return read_llcdm_map(band, yr, nlat, rlz)
+        return read_llcdm_map(band, yr, nlat, rlz, comb=True)
 
     # Read map
     nu = bands[band]['freq']
     if pbscaling:
-        dir = f'phase2/with_pbscaling/total_{yr:02d}_years/'
+        dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/with_pbscaling/total_{yr:02d}_years/'
         mapname = f'phase2_total_f{nu:03d}_SAT_mc_{rlz:04d}.fits'
     else:
-        dir = f'phase2/no_pbscaling/total_{yr:02d}_years/'
+        dir = f'/global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2/no_pbscaling/total_{yr:02d}_years/'
         mapname = f'phase2_total_f{nu:03d}_SAT90_mc_{rlz:04d}.fits'
     m = hp.read_map(dir + mapname, field=(1,2))
     m[m == hp.UNSEEN] = 0.0
@@ -241,14 +266,14 @@ def read_comb_map(band, yr, nlat, rlz, pbscaling=False):
     m = m * 1e6
     return m
 
-def read_maps(maplist, simtype, yr, nlat, rlz, pbscaling=False):
+def read_maps(maplist, simtype, yr, nlat, rlz, pbscaling=False, LTseeding=False):
     """Read in maps for all bands, QU only"""
 
     # Read frequency maps
     maps = []
     for ml in maplist:
         if simtype == 'noise':
-            m = read_noise_map(ml.name, yr, nlat, rlz, pbscaling=pbscaling)
+            m = read_noise_map(ml.name, yr, nlat, rlz, pbscaling=pbscaling, LTseeding=LTseeding)
         elif simtype == 'llcdm':
             m = read_llcdm_map(ml.name, yr, nlat, rlz)
         elif simtype == 'comb':
@@ -257,7 +282,7 @@ def read_maps(maplist, simtype, yr, nlat, rlz, pbscaling=False):
             if ml.simtype == 'signal':
                 m = read_llcdm_map(ml.name, yr, nlat, rlz)
             elif ml.simtype == 'noise':
-                m = read_noise_map(ml.name, yr, nlat, rlz, pbscaling=pbscaling)
+                m = read_noise_map(ml.name, yr, nlat, rlz, pbscaling=pbscaling, LTseeding=LTseeding)
             else:
                 raise ValueError('invalid sim type')
         else:
@@ -275,10 +300,15 @@ def trim_maps(apod, maps, threshold=1e-6):
         for j in range(maps[i].shape[0]):
             maps[i][j,apod[i] < threshold] = 0.0
 
-def spectra_file(simtype, field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False):
+def spectra_file(simtype, field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """Returns HDF5 file name for spectra"""
-
-    filename = 'spectra/phase2_spec_'
+    #filename = '/global/cfs/cdirs/cmbs4/chile_optimization/analysis/cbischoff/phase2/spectra/phase2_spec_' # USE THIS LINE WHEN FINDING COLINS SPECTRA
+    if fpath is not None:
+        if type(fpath) != str:
+            raise TypeError('filepath must be a string')
+        filename = 'spectra/inj_noise/seeded/' + fpath + '/phase2_spec_'
+    else:
+        filename = 'spectra/inj_noise/seeded/not_a_real_filepath/phase2_spec_' 
     filename += f'{simtype}_f{field:1d}_y{yr:1d}_n{nlat:1d}_'
     if split_bands:
         filename += 'split_'
@@ -289,12 +319,13 @@ def spectra_file(simtype, field, yr, nlat, rlz0, rlz1, split_bands=True, pbscali
     else:
         filename += 'nopbs_'
     filename += f'{rlz0:03d}_{rlz1:03d}.h5'
+    print(filename)
     return filename
 
-def get_spectra(simtype, field, yr, nlat, split_bands=True, pbscaling=False):
+def get_spectra(simtype, field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """Loads spectra from HDF5 file"""
-
-    filename = spectra_file(simtype, field, yr, nlat, 0, 100, split_bands=split_bands, pbscaling=pbscaling)
+    
+    filename = spectra_file(simtype, field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath) 
     with h5py.File(filename, 'r') as f:
         spec = XSpec.from_hdf5(f)
     # Keep BB only, ell bins 0-12
@@ -302,13 +333,13 @@ def get_spectra(simtype, field, yr, nlat, split_bands=True, pbscaling=False):
     # Done
     return spec
 
-def get_bpcm(field, yr, nlat, split_bands=True, pbscaling=False):
+def get_bpcm(field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """Bandpower covariance matrix from signal and noise sims"""
 
     # Read spectra
-    spec = get_spectra('signoi', field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    spec = get_spectra('signoi', field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     # Get maplist for combined (signal+noise) sims
-    comb = get_spectra('comb', field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    comb = get_spectra('comb', field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     # Build covariance matrix
     bpcm = BpCov_signoi.from_xspec(comb.maplist, spec)
     # Done
@@ -316,7 +347,7 @@ def get_bpcm(field, yr, nlat, split_bands=True, pbscaling=False):
 
 def get_bpwf(field, split_bands=True):
     """Bandpower window functions from NaMaster"""
-
+    # Is essentially a function that ensures spectral readings are accurate - counteracts masking(?) - see bpwf.py
     # Read apodization mask -- hardcoded gmean option for now
     apod = get_apod(field, 'gmean')
     # Input maps to power spectrum estimator
@@ -349,14 +380,14 @@ def get_cmb_model(wf):
 
     # Unlensed LCDM
     Dl_unlens = np.zeros(shape=(4,wf.lmax()+1))
-    Dl = np.genfromtxt('lowellbb/sky_yy/cmb/cls/ffp10_scalCls.dat')
+    Dl = np.genfromtxt('/global/cfs/cdirs/cmbs4/awg/lowellbb/sky_yy/cmb/cls/ffp10_scalCls.dat')
     ell0 = int(Dl[0,0])
     Dl_unlens[0,ell0:] = Dl[0:wf.lmax()+1-ell0,1] # TT
     Dl_unlens[1,ell0:] = Dl[0:wf.lmax()+1-ell0,2] # EE
     Dl_unlens[3,ell0:] = Dl[0:wf.lmax()+1-ell0,3] # TE
     # Lensed LCDM
     Dl_lens = np.zeros(shape=(4,wf.lmax()+1))
-    Dl = np.genfromtxt('lowellbb/sky_yy/cmb/cls/ffp10_lensedCls.dat')
+    Dl = np.genfromtxt('/global/cfs/cdirs/cmbs4/awg/lowellbb/sky_yy/cmb/cls/ffp10_lensedCls.dat')
     ell0 = int(Dl[0,0])
     Dl_lens[0,ell0:] = Dl[0:wf.lmax()+1-ell0,1] # TT
     Dl_lens[1,ell0:] = Dl[0:wf.lmax()+1-ell0,2] # EE
@@ -364,7 +395,7 @@ def get_cmb_model(wf):
     Dl_lens[3,ell0:] = Dl[0:wf.lmax()+1-ell0,4] # TE
     # Tensors
     Dl_tensor = np.zeros(shape=(4,wf.lmax()+1))
-    Dl = np.genfromtxt('lowellbb/sky_yy/cmb/cls/ffp10_wtensors_tensCls.dat')
+    Dl = np.genfromtxt('/global/cfs/cdirs/cmbs4/awg/lowellbb/sky_yy/cmb/cls/ffp10_wtensors_tensCls.dat')
     ell0 = int(Dl[0,0])
     Dl_tensor[0,ell0:] = Dl[0:wf.lmax()+1-ell0,1] # TT
     Dl_tensor[1,ell0:] = Dl[0:wf.lmax()+1-ell0,2] # EE
@@ -375,7 +406,7 @@ def get_cmb_model(wf):
     mod = Model_cmb(wf.maplist, wf, Dl_unlens, Dl_lens, Dl_tensor, rval)
     return mod
 
-def adjust_bpwf(wf, field, yr, nlat, split_bands=True, pbscaling=False):
+def adjust_bpwf(wf, field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """
     Renormalize window functions for lensing template so that expectation
     value matches mean of sims.
@@ -383,7 +414,7 @@ def adjust_bpwf(wf, field, yr, nlat, split_bands=True, pbscaling=False):
     """
 
     # Read LLCDM-only sims
-    spec = get_spectra('llcdm', field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    spec = get_spectra('llcdm', field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     # CMB model with r=0, Alens=1
     mod = get_cmb_model(wf)
     param = {'r': 0.0, 'Alens': 1.0}
@@ -398,11 +429,11 @@ def adjust_bpwf(wf, field, yr, nlat, split_bands=True, pbscaling=False):
         idx = specind(nmap, i, ltind)
         wf.adjust_windowfn('BB', idx, spec[idx,:,:].mean(axis=1) / expv[idx,:])
 
-def get_bias(field, yr, nlat, split_bands=True, pbscaling=False):
+def get_bias(field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """Get noise bias for specified year, field, and number of LATs"""
 
     # Read noise-only sims
-    spec = get_spectra('noise', field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    spec = get_spectra('noise', field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     # Average over realizations and store as XSpec object
     bias = XSpec(spec.maplist, spec.bins, spec[:].mean(axis=2))
     # Reset MapDef.simtype because it causes problems if this is set to 'noise'
@@ -411,13 +442,13 @@ def get_bias(field, yr, nlat, split_bands=True, pbscaling=False):
     # Done
     return bias
 
-def get_likelihood(field, yr, nlat, split_bands=True, pbscaling=False):
+def get_likelihood(field, yr, nlat, rlz0, rlz1, split_bands=True, pbscaling=False, fpath=None):
     """Get likelihood object"""
-
-    bias = get_bias(field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
-    bpcm = get_bpcm(field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    
+    bias = get_bias(field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
+    bpcm = get_bpcm(field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     wf = get_bpwf(field, split_bands=split_bands)
-    adjust_bpwf(wf, field, yr, nlat, split_bands=split_bands, pbscaling=pbscaling)
+    adjust_bpwf(wf, field, yr, nlat, rlz0, rlz1, split_bands=split_bands, pbscaling=pbscaling, fpath=fpath)
     mod0 = get_cmb_model(wf)
     mod1 = Model_fg(wf.maplist, wf)
     return Likelihood(bias.maplist, bias=bias, bpcm=bpcm, models=[mod0, mod1])

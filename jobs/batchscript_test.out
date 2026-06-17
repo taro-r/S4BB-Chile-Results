@@ -1,0 +1,30 @@
+/global/u1/t/trama/Projects/ChileResults
+total 4714
+drwxrwx---+ 3 trama trama    4096 Apr 23 18:18 batch_scripts
+-rw-rw----+ 1 trama trama 4441800 Apr 23 15:06 compare_spectra.ipynb
+drwxrwx---+ 3 trama trama     512 Apr  4 16:25 data_analysis
+-rw-rw----+ 1 trama trama    5289 Apr 23 15:22 datavis1.ipynb
+-rw-rw----+ 1 trama trama  278641 Apr 23 15:19 distplot.ipynb
+drwxrwx---+ 2 trama trama     512 Mar 20 15:28 hf_2x_scripts
+drwxrwx---+ 7 trama trama    4096 Apr 23 15:35 jobs
+lrwxrwxrwx  1 trama trama      37 Nov  8 18:52 lowellbb -> /global/cfs/cdirs/cmbs4/awg/lowellbb/
+drwxrwx---+ 7 trama trama    4096 Apr  4 17:30 mlsearch
+drwxrwx---+ 2 trama trama     512 Mar  3 17:22 original_scripts
+lrwxrwxrwx  1 trama trama      61 Nov  8 18:49 phase2 -> /global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2
+-rw-rw----+ 1 trama trama    3978 Apr 23 18:18 phase2_calcspec.py
+-rw-rw----+ 1 trama trama   19477 Apr 23 16:53 phase2_common.py
+-rw-rw----+ 1 trama trama    5493 Apr 23 16:48 phase2_mlsearch.py
+drwxrwx---+ 2 trama trama    4096 Apr 23 18:16 __pycache__
+drwxrwx---+ 5 trama trama    4096 Apr  4 16:22 s4bb
+drwxrwx---+ 7 trama trama    4096 Apr  4 16:55 spectra
+-rw-rw----+ 1 trama trama    3017 Apr 11 18:50 spectratest.ipynb
+drwxrwx---+ 4 trama trama     512 Mar  7 18:53 test_scripts
+simtype = llcdm
+field = 1
+year = 20
+nlat = 3
+using full bands
+using performance-based scaling
+rlz 0--100
+3 <class 'int'>
+gauss/gauss_n5 <class 'str'>

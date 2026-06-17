@@ -16,6 +16,8 @@ parser.add_argument('field', type=int,
 parser.add_argument('year', type=int,
                     help='can be 7, 10, or 20')
 # Optional arguments
+parser.add_argument('--rlz', type=int, nargs=2, default=[0,100],
+                    help='realization start and stop indices')
 parser.add_argument('--nlat', type=int, default=3,
                     help='can be 3 (default), 4, or 5')
 parser.add_argument('--split', action='store_true',
@@ -24,6 +26,8 @@ parser.add_argument('--pbs', action='store_true',
                     help='set flag to use performance-based scaling for SAT')
 parser.add_argument('--noffdiag', type=int, default=1,
                     help='number of off-diagonal blocks to keep in BPCM')
+parser.add_argument('--fpath', type=str,
+                    help='set the filepath of the spectra') 
 parser.add_argument('--dry-run', action='store_true',
                     help='print configuration and exit')
 
@@ -32,7 +36,7 @@ parser.add_argument('--dry-run', action='store_true',
 # https://cmb-s4.atlassian.net/wiki/spaces/XPI/pages/1149894714/Bischoff+Buza
 def starting_guess(field):
     if field == 1:
-        guess = {'r': 0.0, 'Alens': 1.0,
+        guess = {'r': 0.0, 'Alens': 1.0, 
                  'A_d': 13.7, 'alpha_d': -0.68, 'beta_d': 1.64, 'T_d': 19.6, 'EEBB_d': 2.0,
                  'A_s': 1.1, 'alpha_s': -1.1, 'beta_s': -3.1, 'EEBB_s': 2.0,
                  'epsilon': 0.025, 'Delta_d': 0.999, 'gamma_d': 0.0,
@@ -64,20 +68,23 @@ if __name__ == '__main__':
     else:
         print('no performance-based scaling')
     print(f'noffdiag = {args.noffdiag}')
+    print(args.fpath, type(args.fpath))
     if args.dry_run:
         quit()
     
     # Code provenance
-    s4bbrepo = git.Repo('s4bb/')
-    print('s4bb version: {}'.format(s4bbrepo.head.object.hexsha))
+    #s4bbrepo = git.Repo('s4bb/')
+    #print('s4bb version: {}'.format(s4bbrepo.head.object.hexsha))
+    print('s4bb version: local files only (no git)')
 
     # Read CMB+fg+noise spectra
-    data = ph2.get_spectra('comb', args.field, args.year, args.nlat,
-                           split_bands=args.split, pbscaling=args.pbs)
+    data = ph2.get_spectra('comb', args.field, args.year, args.nlat, args.rlz[0], args.rlz[1],
+                           split_bands=args.split, pbscaling=args.pbs, fpath=args.fpath)
     # Get likelihood data structure
-    lik = ph2.get_likelihood(args.field, args.year, args.nlat,
-                             split_bands=args.split, pbscaling=args.pbs)
-
+    lik = ph2.get_likelihood(args.field, args.year, args.nlat, args.rlz[0], args.rlz[1],
+                             args.split, args.pbs, fpath=args.fpath)
+    print(data)
+    print(lik)
     # H-L precalculations
     # It seems to make a big difference to set noffdiag=1 for the
     # bandpower covariance matrix. Keeping two off-diagonal blocks
@@ -87,7 +94,12 @@ if __name__ == '__main__':
                               noffdiag=args.noffdiag, mask_noise=True)
     
     # Save results
-    savefile = f'mlsearch/ph2_mlsearch_f{args.field}_y{args.year}_n{args.nlat}'
+    
+    if args.fpath is not None:
+        savefile = 'mlsearch/inj_noise/seeded/' + args.fpath + \
+        f'/att2_ph2_mlsearch_f{args.field}_y{args.year}_n{args.nlat}'
+    else:
+        savefile = f'mlsearch/inj_noise/seeded/not_a_real_filepath/ph2_mlsearch_f{args.field}_y{args.year}_n{args.nlat}' 
     if args.split:
         savefile += '_split'
     else:
@@ -97,10 +109,10 @@ if __name__ == '__main__':
     else:
         savefile += '_nopbs'
     savefile += '.npy'
-
+    print(savefile)
     # Run maximum likelihood searches
-    free = ['r', 'A_d', 'alpha_d', 'beta_d', 'A_s', 'alpha_s', 'beta_s', 'epsilon',
-            'Delta_d', 'Delta_s']
+    free = ['r', 'A_d','alpha_d', 'beta_d', 'A_s', 'alpha_s', 'beta_s', 'epsilon',
+            'Delta_d', 'Delta_s'] 
     limits = {'beta_d': [1.0, 2.0], 'alpha_d': [-2.0, 0.5],
               'beta_s': [-4.0, -2.0], 'alpha_s': [-2.0, 0.5],
               'epsilon': [-1,1], 'Delta_d': [0.5,1.1], 'Delta_s': [0.5,1.1]}
@@ -123,5 +135,6 @@ if __name__ == '__main__':
         x[9,i] = result['epsilon']
         x[10,i] = result['Delta_d']
         x[11,i] = result['Delta_s']
+    print('modified this script while sbatch is running')
     # Done, save results.
     np.save(savefile, x)

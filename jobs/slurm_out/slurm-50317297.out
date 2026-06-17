@@ -1,0 +1,17 @@
+/global/u1/t/trama/Projects/ChileResults
+total 79
+drwxrwx---+ 3 trama trama  4096 Mar 20 15:42 batch_scripts
+drwxrwx---+ 2 trama trama   512 Mar 20 15:31 data_analysis
+drwxrwx---+ 2 trama trama   512 Mar 20 15:28 hf_2x_scripts
+drwxrwx---+ 6 trama trama  4096 Mar 12 01:19 jobs
+lrwxrwxrwx  1 trama trama    37 Nov  8 18:52 lowellbb -> /global/cfs/cdirs/cmbs4/awg/lowellbb/
+drwxrwx---+ 6 trama trama  4096 Mar 11 21:56 mlsearch
+drwxrwx---+ 2 trama trama   512 Mar  3 17:22 original_scripts
+lrwxrwxrwx  1 trama trama    61 Nov  8 18:49 phase2 -> /global/cfs/cdirs/cmbs4/chile_optimization/simulations/phase2
+-rw-rw----+ 1 trama trama  3791 Mar  5 17:44 phase2_calcspec.py
+-rw-rw----+ 1 trama trama 18629 Mar 20 15:17 phase2_common.py
+-rw-rw----+ 1 trama trama  5108 Mar 11 21:59 phase2_mlsearch.py
+drwxrwx---+ 2 trama trama   512 Mar 20 09:53 __pycache__
+drwxrwx---+ 5 trama trama  4096 Mar 20 15:13 s4bb
+drwxrwx---+ 6 trama trama  4096 Mar 11 21:55 spectra
+drwxrwx---+ 4 trama trama   512 Mar  7 18:53 test_scripts

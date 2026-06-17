@@ -1,0 +1,120 @@
+note: doesn't have timestamps/more info bc i did this on an interactive node
+
+field = 1
+year = 20
+nlat = 3
+using full bands
+using performance-based scaling
+noffdiag = 0
+s4bb version: local files only (no git)
+spectra/inj_noise/seeded/gauss_baseline/phase2_spec_comb_f1_y20_n3_full_withpbs_000_100.h5
+spectra/inj_noise/seeded/gauss_baseline/phase2_spec_noise_f1_y20_n3_full_withpbs_000_100.h5
+spectra/inj_noise/seeded/gauss_baseline/phase2_spec_signoi_f1_y20_n3_full_withpbs_000_100.h5
+spectra/inj_noise/seeded/gauss_baseline/phase2_spec_comb_f1_y20_n3_full_withpbs_000_100.h5
+spectra/inj_noise/seeded/gauss_baseline/phase2_spec_llcdm_f1_y20_n3_full_withpbs_000_100.h5
+<s4bb.spectra.XSpec object at 0x7f55752d6b60>
+<s4bb.likelihood.Likelihood object at 0x7f55752d6560>
+mlsearch/inj_noise/seeded/gauss_baseline/ph2_mlsearch_f1_y20_n3_full_withpbs.npy
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+/global/u1/t/trama/Projects/ChileResults/s4bb/models.py:629: RuntimeWarning: invalid value encountered in sqrt
+  np.sqrt(param[0] * param[5] * dust_ell_scale *
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+modified this script before sbatch started
